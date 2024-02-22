@@ -115,23 +115,24 @@ void loop() {
   }
   
   if (tasksEnabled) {
-    if (getTemperature()) {
-      // Send temperature and humidity data to LINE only if it hasn't been sent before
-      if (!isTemperatureSent) {
-        LINE.notify("Temperature: " + String(tem) + " °C   Humidity: " + String(hum) + " %");
-        isTemperatureSent = true; // Set the flag to indicate that temperature has been sent
-      }
+    do {
+      if (getTemperature()) {
+        // Send temperature and humidity data to LINE only if it hasn't been sent before
+        if (!isTemperatureSent) {
+          LINE.notify("Temperature: " + String(tem) + " °C   Humidity: " + String(hum) + " %");
+          isTemperatureSent = true; // Set the flag to indicate that temperature has been sent
+        }
 
-      // Check if temperature is over the limit
-      if (tem > 40 && !isOverTempNotified) {
-        LINE.notify("Temperature exceeds the limit!");
-        isOverTempNotified = true;
+        // Check if temperature is over the limit
+        if (tem > 40 && !isOverTempNotified) {
+          LINE.notify("Temperature exceeds the limit!");
+          isOverTempNotified = true;
+        }
       }
-    }
-    else {
-      // Reset the flag if temperature reading fails
-      isTemperatureSent = false;
-    }
+      else {
+        // Reset the flag if temperature reading fails
+        isTemperatureSent = false;
+      }
+    } while(false); // Perform the loop only once
   }
 }
-
