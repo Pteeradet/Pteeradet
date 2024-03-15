@@ -6,7 +6,7 @@
 
 #define BLYNK_TEMPLATE_ID "TMPL6DxGSoS9L"
 #define BLYNK_TEMPLATE_NAME "Project IoT"
-#define BLYNK_FIRMWARE_VERSION        "0.1.0"
+#define BLYNK_FIRMWARE_VERSION "0.1.0"
 #include <BlynkSimpleEsp32.h>
 
 #define DHTPIN 23
@@ -58,6 +58,9 @@ const char* test_root_ca =
 
 WiFiClientSecure client;
 
+int tempstatus = 0;
+int previousTemp = -1;
+
 void setup() {
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
@@ -106,6 +109,8 @@ void setup() {
 
     client.stop();
   }
+  float hum = dht.readHumidity();
+  float temp = dht.readTemperature();
 }
 
 void loop() {
@@ -114,7 +119,8 @@ void loop() {
   int index = 0;
   char value;
   char previousValue;
-  int previousTemp = -1;
+
+
 
   configTime(timezone, dst, "ntp.ku.ac.th", "fw.eng.ku.ac.th");
   time_t now = time(nullptr);
@@ -139,6 +145,8 @@ void loop() {
   //DHT code
   float hum = dht.readHumidity();
   float temp = dht.readTemperature();
+
+
   if (isnan(hum) || isnan(temp)) {
     Serial.println(F("Failed to read from DHT sensor!"));
     delay(2000);
@@ -151,26 +159,7 @@ void loop() {
   Serial.print(F("°C "));
   Serial.println();
 
-  //line code
-  if (temp != previousTemp) {
-    if (temp == 0) {
-      LINE.notify("High Temperature\n"
-                  "Temperature: "
-                  + String(temp) + " °C\nHumidity: " + String(hum) + " %");
-      LINE.notify("PM2.5: " + String(pm2_5) + "ug/m3\n" + "PM10: " + String(pm10) + "ug/m3");
-    } else {
 
-      LINE.notify("Normal Temperature\n"
-                  "Temperature: "
-                  + String(temp) + " °C\nHumidity: " + String(hum) + " %");
-      LINE.notify("PM2.5: " + String(pm2_5) + "ug/m3\n" + "PM10: " + String(pm10) + "ug/m3");
-    }
-    previousTemp = temp;
-  }
-  if (p_tm->tm_hour == 3) {
-    LINE.notify("Temperature: " + String(temp) + " °C\nHumidity: " + String(hum) + " %");
-    LINE.notify("PM2.5: " + String(pm2_5) + "ug/m3\n" + "PM10: " + String(pm10) + "ug/m3");
-  }
   //psm5003 code
   while (mySerial.available()) {
     value = mySerial.read();
@@ -182,7 +171,7 @@ void loop() {
     if (index == 4 || index == 6 || index == 8 || index == 10 || index == 12 || index == 14) {
       previousValue = value;
 
-    }  else if (index == 5) {
+    } else if (index == 5) {
 
       pm2_5 = 256 * previousValue + value;
       Serial.print("\"pm2_5\": ");
@@ -209,6 +198,35 @@ void loop() {
   Blynk.virtualWrite(V3, pm10);
   Blynk.virtualWrite(V4, hum);
   Blynk.virtualWrite(V5, temp);
+
+  if (temp > 40) {
+    tempstatus = 0;
+  } else {
+    tempstatus = 1;
+  }
+
+  //line code
+  if (tempstatus != previousTemp) {
+    if (tempstatus == 0) {
+      LINE.notify("High Temperature\n"
+                  "Temperature: "
+                  + String(temp) + " °C\nHumidity: " + String(hum) + " %");a
+      LINE.notify("PM2.5: " + String(pm2_5) + "ug/m3\n" + "PM10: " + String(pm10) + "ug/m3");
+    } else {
+      LINE.notify("Normal Temperature\n"
+                  "Temperature: "
+                  + String(temp) + " °C\nHumidity: " + String(hum) + " %");
+      LINE.notify("PM2.5: " + String(pm2_5) + "ug/m3\n" + "PM10: " + String(pm10) + "ug/m3");
+    }
+    previousTemp = tempstatus;
+  }
+  int treehour = p_tm->tm_hour % 3;
+  if (treehour == 0) {
+    if (p_tm->tm_min == 0 && (p_tm->tm_sec == 0) || (p_tm->tm_sec == 1)) {
+      LINE.notify("Temperature: " + String(temp) + " °C\nHumidity: " + String(hum) + " %");
+      LINE.notify("PM2.5: " + String(pm2_5) + "ug/m3\n" + "PM10: " + String(pm10) + "ug/m3");
+    }
+  }
 
   delay(2000);
 }
