@@ -1,0 +1,244 @@
+#include <TridentTD_LineNotify.h>
+#include <time.h>
+#include "DHTesp.h"
+#include <SoftwareSerial.h>
+
+#define BLYNK_FIRMWARE_VERSION "0.1.0"
+
+#define BLYNK_TEMPLATE_ID "TMPL6DxGSoS9L"
+#define BLYNK_TEMPLATE_NAME "Project IoT"
+// #define BLYNK_AUTH_TOKEN "POx793R8ghgoB2oD8-TNa0rB2zGLYlZc"
+
+
+#include "BlynkEdgent.h"
+
+// #define SSID "Trdd_ps"                                            //ใส่ ชื่อ Wifi ที่จะเชื่อมต่อ
+// #define PASSWORD "0989914539"
+
+#define SSID "James 2.4GHz"  //ใส่ ชื่อ Wifi ที่จะเชื่อมต่อ
+#define PASSWORD "Jm0475Bl."
+#define LINE_TOKEN "kp1jVTC8RwovwSvbrNx0SdLzyhiYiLGDXntWIaOfBba"  //ใส่ รหัส TOKEN ที่ได้มาจากข้างบน
+
+int timezone = 7 * 3600;
+int dst = 0;
+int WeekDay;
+char day;
+
+int tem = 0;
+int hum = 0;
+
+SoftwareSerial mySerial(21, 22);  // RX, TX
+unsigned int pm1 = 0;
+unsigned int pm2_5 = 0;
+unsigned int pm10 = 0;
+
+
+#ifndef ESP32
+#pragma message(THIS EXAMPLE IS FOR ESP32 ONLY !)
+#error Select ESP32 board.
+#endif
+
+DHTesp dht;
+
+void tempTask(void *pvParameters);
+bool getTemperature();
+
+TaskHandle_t tempTaskHandle = NULL;
+
+bool tasksEnabled = false;
+int dhtPin = 23;
+bool isOverTempNotified = false;
+
+bool initTemp() {
+  byte resultValue = 0;
+  // Initialize temperature sensor
+  dht.setup(dhtPin, DHTesp::DHT11);
+  Serial.println("DHT initiated");
+
+  // Start task to get temperature
+  xTaskCreatePinnedToCore(
+    tempTask,        /* Function to implement the task */
+    "tempTask ",     /* Name of the task */
+    4000,            /* Stack size in words */
+    NULL,            /* Task input parameter */
+    5,               /* Priority of the task */
+    &tempTaskHandle, /* Task handle. */
+    1);              /* Core where the task should run */
+
+  if (tempTaskHandle == NULL) {
+    Serial.println("Failed to start task for temperature update");
+    return false;
+  }
+  return true;
+}
+
+void tempTask(void *pvParameters) {
+  Serial.println("tempTask loop started");
+  while (1)  // tempTask loop
+  {
+    if (tasksEnabled) {
+      // Get temperature values
+      getTemperature();
+    }
+    // Got sleep again
+    vTaskSuspend(NULL);
+    Serial.print(".");
+    delay (200);
+  }
+}
+
+bool getTemperature() {
+  TempAndHumidity newValues = dht.getTempAndHumidity();
+  // Check if any reads failed and exit early (to try again).
+  if (dht.getStatus() != 0) {
+    Serial.println("DHT11 error status: " + String(dht.getStatusString()));
+    return false;
+  }
+
+  float heatIndex = dht.computeHeatIndex(newValues.temperature, newValues.humidity);
+  float dewPoint = dht.computeDewPoint(newValues.temperature, newValues.humidity);
+
+  Serial.println("Temperature: " + String(newValues.temperature));
+  Serial.println("Humidity: " + String(newValues.humidity));
+  tem = newValues.temperature;
+  hum = newValues.humidity;
+
+  return true;
+}
+
+void setup() {
+  WiFi.begin(SSID, PASSWORD);
+  Serial.printf("WiFi connecting to %s\n", SSID);
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(400);
+  }
+  Serial.printf("\nWiFi connected\nIP : ");
+  Serial.println(WiFi.localIP());
+  BlynkEdgent.begin();
+
+  Serial.begin(9600);
+  while (!Serial)
+    ;
+  mySerial.begin(9600);
+
+  // Set Line Token
+  LINE.setToken(LINE_TOKEN);
+
+  Serial.println("DHT ESP32 example with tasks");
+  initTemp();
+}
+
+bool isTemperatureSent = false;
+
+int temp;
+int previousTemp = -1;
+
+void loop() {
+  BlynkEdgent.run();
+  int index = 0;
+  char value;
+  char previousValue;
+
+  configTime(timezone, dst, "ntp.ku.ac.th", "fw.eng.ku.ac.th");
+  time_t now = time(nullptr);
+  struct tm *p_tm = localtime(&now);
+  Serial.print("Date : ");
+  switch (p_tm->tm_wday) {
+    case 0: Serial.println("Sunday"); break;
+    case 1: Serial.println("Monday"); break;
+    case 2: Serial.println("Tueday"); break;
+    case 3: Serial.println("Wednesday"); break;
+    case 4: Serial.println("Thursday"); break;
+    case 5: Serial.println("Friday"); break;
+    case 6: Serial.println("Satday"); break;
+  }
+  Serial.print("Time : ");
+  Serial.print(p_tm->tm_hour);
+  Serial.print(":");
+  Serial.print(p_tm->tm_min);
+  Serial.print(":");
+  Serial.println(p_tm->tm_sec);
+
+  getTemperature();
+  if (tem > 40) {
+    temp = 0;
+  } else {
+    temp = 1;
+  }
+
+  if (temp != previousTemp) {
+    if (temp == 0) {
+      LINE.notify("High Temperature\n"
+                  "Temperature: "
+                  + String(tem) + " °C\nHumidity: " + String(hum) + " %");
+      LINE.notify("PM1: " + String(pm1) + "ug/m3\n" + "PM2.5: " + String(pm2_5) + "ug/m3\n" + "PM10: " + String(pm10) + "ug/m3");
+    } else {
+
+      LINE.notify("Normal Temperature\n"
+                  "Temperature: "
+                  + String(tem) + " °C\nHumidity: " + String(hum) + " %");
+      LINE.notify("PM1: " + String(pm1) + "ug/m3\n" + "PM2.5: " + String(pm2_5) + "ug/m3\n" + "PM10: " + String(pm10) + "ug/m3");
+    }
+    previousTemp = temp;
+  }
+
+  // if ((p_tm->tm_wday == 0) && (p_tm->tm_hour == 12) && (p_tm->tm_min == 0) && (p_tm->tm_sec == 0)) {
+  //   LINE.notify("Line");
+  // }
+
+  if ((p_tm->tm_sec == 0) || (p_tm->tm_sec == 1)) {
+    LINE.notify("Temperature: " + String(tem) + " °C\nHumidity: " + String(hum) + " %");
+    LINE.notify("PM1: " + String(pm1) + "ug/m3\n" + "PM2.5: " + String(pm2_5) + "ug/m3\n" + "PM10: " + String(pm10) + "ug/m3");
+  }
+
+  while (mySerial.available()) {
+    value = mySerial.read();
+    if ((index == 0 && value != 0x42) || (index == 1 && value != 0x4d)) {
+      Serial.println("Cannot find the data header.");
+      break;
+    }
+
+    if (index == 4 || index == 6 || index == 8 || index == 10 || index == 12 || index == 14) {
+      previousValue = value;
+
+    } else if (index == 5) {
+
+      pm1 = 256 * previousValue + value;
+      Serial.print("{ ");
+      Serial.print("\"pm1\": ");
+      Serial.print(pm1);
+      Serial.print(" ug/m3");
+      Serial.print(", ");
+    } else if (index == 7) {
+
+      pm2_5 = 256 * previousValue + value;
+      Serial.print("\"pm2_5\": ");
+      Serial.print(pm2_5);
+      Serial.print(" ug/m3");
+      Serial.print(", ");
+    } else if (index == 9) {
+
+      pm10 = 256 * previousValue + value;
+      Serial.print("\"pm10\": ");
+      Serial.print(pm10);
+      Serial.print(" ug/m3");
+    } else if (index > 15) {
+
+      break;
+    }
+    index++;
+  }
+  while (mySerial.available()) mySerial.read();
+  Serial.println(" }");
+
+  Serial.println("");
+  Blynk.virtualWrite(V1, pm1);
+  Blynk.virtualWrite(V2, pm2_5);
+  Blynk.virtualWrite(V3, pm10);
+  Blynk.virtualWrite(V4, hum);
+  Blynk.virtualWrite(V5, tem);
+
+
+  delay(2000);
+}
