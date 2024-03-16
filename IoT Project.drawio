@@ -1,9 +1,39 @@
-<mxfile host="app.diagrams.net" modified="2024-03-16T17:14:09.725Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" version="24.0.5" etag="KZY_hWFOivpShBmbjjqE" type="github">
+<mxfile host="app.diagrams.net" modified="2024-03-16T17:26:41.681Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" etag="6MR9cXzcXLD6zo5V7gb6" version="24.0.5" type="github">
   <diagram name="หน้า-1" id="D38iJYiWYoByJKxBrV8E">
-    <mxGraphModel>
+    <mxGraphModel dx="955" dy="475" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="itMPRGRReH19wazTR6ho-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="itMPRGRReH19wazTR6ho-1" target="itMPRGRReH19wazTR6ho-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="itMPRGRReH19wazTR6ho-1" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;เริ่มต้น&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="371" y="30" width="59" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="itMPRGRReH19wazTR6ho-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="itMPRGRReH19wazTR6ho-2" target="itMPRGRReH19wazTR6ho-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="itMPRGRReH19wazTR6ho-2" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="390" y="90" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="itMPRGRReH19wazTR6ho-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="itMPRGRReH19wazTR6ho-3" target="itMPRGRReH19wazTR6ho-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="itMPRGRReH19wazTR6ho-3" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;สั่งควบคุมผ่านApp&lt;/font&gt;&lt;div style=&quot;font-size: 9px;&quot;&gt;&lt;font style=&quot;font-size: 9px;&quot;&gt;Blynk&lt;/font&gt;&lt;/div&gt;" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="140" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="itMPRGRReH19wazTR6ho-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="itMPRGRReH19wazTR6ho-10" target="itMPRGRReH19wazTR6ho-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="itMPRGRReH19wazTR6ho-10" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;esp32 สั่งควบคุม&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="355" y="210" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="itMPRGRReH19wazTR6ho-12" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;ควบคุมอุปกรณ์&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="360.5" y="270" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="itMPRGRReH19wazTR6ho-16" value="" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="350" width="80" height="50" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
